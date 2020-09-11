@@ -13,6 +13,9 @@ var siteConfigCache = cacheLib.newCache({
 
 
 exports.responseProcessor = function (req, res) {
+    if (req.mode !== 'live') {
+        return res;
+    }
 
     var site = portalLib.getSite();
 
@@ -30,10 +33,6 @@ exports.responseProcessor = function (req, res) {
 
         // Only add snippet if in live mode and containerID is set
         if (!containerID) {
-            return res;
-        }
-
-        if (req.mode !== 'live') {
             return res;
         }
 
