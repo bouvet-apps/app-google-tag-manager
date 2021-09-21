@@ -1,34 +1,59 @@
-var portalLib = require('/lib/xp/portal');
-var cacheLib = require("/lib/cache");
+const libs = {
+    portal: require('/lib/xp/portal'),
+    cache: require("/lib/cache")
+};
 
-var forceArray = function (data) {
+const forceArray = (data) => {
     if (data === undefined || data === null || (typeof data === "number" && isNaN(data))) return [];
     return Array.isArray(data) ? data : [data];
 };
 
-var siteConfigCache = cacheLib.newCache({
+const siteConfigCache = libs.cache.newCache({
     size: 20,
     expire: 10 * 60 // 10 minute cache
 });
 
+const getDefaultScript = (containerID) => {
+    const snippet = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': \
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], \
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= \
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); \
+    })(window,document,'script','dataLayer','${containerID}');`
+    return snippet;
+};
 
-exports.responseProcessor = function (req, res) {
+const getConsentRequiredScript = (script, defaultDisable) => {
+    const snippet = `var gtmScript = "${script}"; \
+        window.__RUN_ON_COOKIE_CONSENT__ = window.__RUN_ON_COOKIE_CONSENT__ || {}; \
+        window.__RUN_ON_COOKIE_CONSENT__["${defaultDisable}"] = function () { \
+          var s = document.createElement("script"); \
+          s.id = "google-tagmanager-consent"; \
+          s.innerText = gtmScript; \
+          document.getElementsByTagName("head")[0].appendChild(s); \
+        }`;
+    return snippet;
+};
+
+
+exports.responseProcessor = (req, res) => {
     if (req.mode !== 'live') {
         return res;
     }
 
-    var site = portalLib.getSite();
+    const site = libs.portal.getSite();
+
+    const defaultDisable = app.name.replace(/\./g, "-") + "_disabled";
 
     if (site && site._path) {
-        var siteConfig = siteConfigCache.get(req.branch + "_" + site._path, function () {
-            var config = portalLib.getSiteConfig() || {};
+        const siteConfig = siteConfigCache.get(req.branch + "_" + site._id, () => {
+            const config = libs.portal.getSiteConfig() || {};
             config.disableCookies = forceArray(config.disableCookies);
-            config.disableCookies.push({ name: app.name.replace(/\./g, "-") + "_disabled", value: "true" });
+            config.disableCookies.push({ name: defaultDisable, value: "true" });
             return config;
         });
 
-        var containerID = siteConfig['googleTagManagerContainerID'] || '';
-        var disableCookies = siteConfig['disableCookies'];
+        const containerID = siteConfig['googleTagManagerContainerID'] || '';
+        const disableCookies = siteConfig['disableCookies'];
 
 
         // Only add snippet if in live mode and containerID is set
@@ -36,11 +61,11 @@ exports.responseProcessor = function (req, res) {
             return res;
         }
 
-        var cookies = req.cookies;
+        const cookies = req.cookies;
         if (res.cookies) {
-            var resCookieKeys = Object.keys(res.cookies);
-            for (var keyIndex = 0; keyIndex < resCookieKeys.length; keyIndex++) {
-                var key = resCookieKeys[keyIndex];
+            const resCookieKeys = Object.keys(res.cookies);
+            for (let keyIndex = 0; keyIndex < resCookieKeys.length; keyIndex++) {
+                const key = resCookieKeys[keyIndex];
                 if (res.cookies[key].value) {
                     cookies[key] = res.cookies[key].value;
                 } else {
@@ -49,27 +74,30 @@ exports.responseProcessor = function (req, res) {
             }
         }
 
-        for (var cookieIndex = 0; cookieIndex < disableCookies.length; cookieIndex++) {
-            var disableCookie = disableCookies[cookieIndex];
+        let script = getDefaultScript(containerID);
+        for (let cookieIndex = 0; cookieIndex < disableCookies.length; cookieIndex++) {
+            const disableCookie = disableCookies[cookieIndex];
 
+            // If disabled through cookie, add JavaScript for enabling later 
             if (cookies[disableCookie.name] === disableCookie.value) {
-                return res;
+                script = getConsentRequiredScript(script, defaultDisable);
+                break;
             }
         }
 
-        var headSnippet = '<!-- Google Tag Manager -->';
-        headSnippet += '<script>dataLayer = [];</script>';
-        headSnippet += '<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({\'gtm.start\':';
-        headSnippet += 'new Date().getTime(),event:\'gtm.js\'});var f=d.getElementsByTagName(s)[0],';
-        headSnippet += 'j=d.createElement(s),dl=l!=\'dataLayer\'?\'&l=\'+l:\'\';j.async=true;j.src=';
-        headSnippet += '\'//www.googletagmanager.com/gtm.js?id=\'+i+dl;f.parentNode.insertBefore(j,f);';
-        headSnippet += '})(window,document,\'script\',\'dataLayer\',\'' + containerID + '\');</script>';
-        headSnippet += '<!-- End Google Tag Manager -->';
+        const headSnippet = `<!-- Google Tag Manager --> \
+        <script>dataLayer = [];</script>
+        <script> \
+        ${script} \
+        </script> \
+        <!-- End Google Tag Manager -->`;
 
-        var bodySnippet = '<!-- Google Tag Manager (noscript) -->';
-        bodySnippet += '<noscript><iframe name="Google Tag Manager" src="//www.googletagmanager.com/ns.html?id=' + containerID + '" ';
-        bodySnippet += 'height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>';
-        bodySnippet += '<!-- End Google Tag Manager (noscript) -->';
+
+
+        const bodySnippet = `<!-- Google Tag Manager (noscript) --> \
+        <noscript><iframe name="Google Tag Manager" src="//www.googletagmanager.com/ns.html?id=${containerID}" \
+        height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript> \
+        <!-- End Google Tag Manager (noscript) -->`;
 
 
 
