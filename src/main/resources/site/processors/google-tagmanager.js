@@ -46,7 +46,7 @@ exports.responseProcessor = (req, res) => {
         });
 
         const containerID = siteConfig['googleTagManagerContainerID'] || '';
-        const disableCookie = siteConfig['disableCookie'] ? siteConfig['disableCookie']['name'] : defaultDisable;
+        const disableCookie = siteConfig['disableCookie'] || defaultDisable;
 
 
         // Only add snippet if in live mode and containerID is set
