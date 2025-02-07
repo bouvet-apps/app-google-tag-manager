@@ -5,10 +5,10 @@
       <label>Container ID</label>
       <occurrences minimum="0" maximum="1" />
     </input>
-    <item-set name="disableCookies">
-      <label>Deactivating cookies</label>
-      <help-text>Add cookies that the app will look for. If they have the value added here, Google Tag Manager won't be added to the page.</help-text>
-      <occurrences maximum="0" minimum="0" />
+    <item-set name="disableCookie">
+      <label>Deactivating cookie</label>
+      <help-text>Add a cookie that the app will look for. If it has the value added here, Google Tag Manager won't be added to the page.</help-text>
+      <occurrences maximum="1" minimum="0" />
       <items>
         <input name="name" type="TextLine">
           <label>Cookie name</label>

@@ -3,11 +3,6 @@ const libs = {
     cache: require("/lib/cache")
 };
 
-const forceArray = (data) => {
-    if (data === undefined || data === null || (typeof data === "number" && isNaN(data))) return [];
-    return Array.isArray(data) ? data : [data];
-};
-
 const siteConfigCache = libs.cache.newCache({
     size: 20,
     expire: 10 * 60 // 10 minute cache
@@ -22,10 +17,10 @@ const getDefaultScript = (containerID) => {
     return snippet;
 };
 
-const getConsentRequiredScript = (script, defaultDisable) => {
+const getConsentRequiredScript = (script, disableCookie) => {
     const snippet = `var gtmScript = "${script}"; \
         window.__RUN_ON_COOKIE_CONSENT__ = window.__RUN_ON_COOKIE_CONSENT__ || {}; \
-        window.__RUN_ON_COOKIE_CONSENT__["${defaultDisable}"] = function () { \
+        window.__RUN_ON_COOKIE_CONSENT__["${disableCookie}"] = function () { \
           var s = document.createElement("script"); \
           s.id = "google-tagmanager-consent"; \
           s.innerText = gtmScript; \
@@ -47,13 +42,11 @@ exports.responseProcessor = (req, res) => {
     if (site && site._path) {
         const siteConfig = siteConfigCache.get(req.branch + "_" + site._id, () => {
             const config = libs.portal.getSiteConfig() || {};
-            config.disableCookies = forceArray(config.disableCookies);
-            config.disableCookies.push({ name: defaultDisable, value: "true" });
             return config;
         });
 
         const containerID = siteConfig['googleTagManagerContainerID'] || '';
-        const disableCookies = siteConfig['disableCookies'];
+        const disableCookie = siteConfig['disableCookie'] ? siteConfig['disableCookie']['name'] : defaultDisable;
 
 
         // Only add snippet if in live mode and containerID is set
@@ -61,29 +54,7 @@ exports.responseProcessor = (req, res) => {
             return res;
         }
 
-        const cookies = req.cookies;
-        if (res.cookies) {
-            const resCookieKeys = Object.keys(res.cookies);
-            for (let keyIndex = 0; keyIndex < resCookieKeys.length; keyIndex++) {
-                const key = resCookieKeys[keyIndex];
-                if (res.cookies[key].value) {
-                    cookies[key] = res.cookies[key].value;
-                } else {
-                    cookies[key] = res.cookies[key];
-                }
-            }
-        }
-
-        let script = getDefaultScript(containerID);
-        for (let cookieIndex = 0; cookieIndex < disableCookies.length; cookieIndex++) {
-            const disableCookie = disableCookies[cookieIndex];
-
-            // If disabled through cookie, add JavaScript for enabling later 
-            if (cookies[disableCookie.name] === disableCookie.value) {
-                script = getConsentRequiredScript(script, defaultDisable);
-                break;
-            }
-        }
+        const script = getConsentRequiredScript(getDefaultScript(containerID), disableCookie);
 
         const headSnippet = `<!-- Google Tag Manager --> \
         <script>dataLayer = [];</script>

@@ -25,7 +25,7 @@ This app can be downloaded from [our repo](http://repo.enonic.com/public/com/eno
 
 ## Configuration
 
-Just add the app to your site. The only configuration required is setting the Container ID for Google Tag Manager.
+Just add the app to your site. The only configuration required is setting the Container ID for Google Tag Manager. Optionally, a deactivating cookie can also be defined. If this cookie is present on the site with the specified value, it will prevent tags from being added. If not configured, the deactivating cookie is by default set to "com-enonic-app-google-tagmanager_disabled" with the value "true".
 
 ## Notes
 
