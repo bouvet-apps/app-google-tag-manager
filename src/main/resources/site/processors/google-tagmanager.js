@@ -75,15 +75,7 @@ exports.responseProcessor = (req, res) => {
         }
 
         let script = getDefaultScript(containerID);
-        for (let cookieIndex = 0; cookieIndex < disableCookies.length; cookieIndex++) {
-            const disableCookie = disableCookies[cookieIndex];
-
-            // If disabled through cookie, add JavaScript for enabling later 
-            if (cookies[disableCookie.name] === disableCookie.value) {
-                script = getConsentRequiredScript(script, defaultDisable);
-                break;
-            }
-        }
+        script = getConsentRequiredScript(script, defaultDisable);
 
         const headSnippet = `<!-- Google Tag Manager --> \
         <script>dataLayer = [];</script>
