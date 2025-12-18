@@ -85,14 +85,6 @@ exports.responseProcessor = (req, res) => {
         <!-- End Google Tag Manager -->`;
 
 
-
-        const bodySnippet = `<!-- Google Tag Manager (noscript) --> \
-        <noscript><iframe name="Google Tag Manager" src="//www.googletagmanager.com/ns.html?id=${containerID}" \
-        height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript> \
-        <!-- End Google Tag Manager (noscript) -->`;
-
-
-
         var headEnd = res.pageContributions.headEnd;
         if (!headEnd) {
             res.pageContributions.headEnd = [];
@@ -109,7 +101,6 @@ exports.responseProcessor = (req, res) => {
         else if (typeof (bodyBegin) == 'string') {
             res.pageContributions.bodyBegin = [bodyBegin];
         }
-        res.pageContributions.bodyBegin.push(bodySnippet);
     }
     return res;
 };
