@@ -34,7 +34,6 @@ const getConsentRequiredScript = (script, defaultDisable) => {
     return snippet;
 };
 
-
 exports.responseProcessor = (req, res) => {
     if (req.mode !== 'live') {
         return res;
@@ -46,32 +45,14 @@ exports.responseProcessor = (req, res) => {
 
     if (site && site._path) {
         const siteConfig = siteConfigCache.get(req.branch + "_" + site._id, () => {
-            const config = libs.portal.getSiteConfig() || {};
-            config.disableCookies = forceArray(config.disableCookies);
-            config.disableCookies.push({ name: defaultDisable, value: "true" });
-            return config;
+            return libs.portal.getSiteConfig() || {};
         });
 
         const containerID = siteConfig['googleTagManagerContainerID'] || '';
-        const disableCookies = siteConfig['disableCookies'];
-
 
         // Only add snippet if in live mode and containerID is set
         if (!containerID) {
             return res;
-        }
-
-        const cookies = req.cookies;
-        if (res.cookies) {
-            const resCookieKeys = Object.keys(res.cookies);
-            for (let keyIndex = 0; keyIndex < resCookieKeys.length; keyIndex++) {
-                const key = resCookieKeys[keyIndex];
-                if (res.cookies[key].value) {
-                    cookies[key] = res.cookies[key].value;
-                } else {
-                    cookies[key] = res.cookies[key];
-                }
-            }
         }
 
         let script = getDefaultScript(containerID);
