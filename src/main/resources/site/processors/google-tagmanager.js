@@ -3,11 +3,6 @@ const libs = {
     cache: require("/lib/cache")
 };
 
-const forceArray = (data) => {
-    if (data === undefined || data === null || (typeof data === "number" && isNaN(data))) return [];
-    return Array.isArray(data) ? data : [data];
-};
-
 const siteConfigCache = libs.cache.newCache({
     size: 20,
     expire: 10 * 60 // 10 minute cache
@@ -40,7 +35,6 @@ exports.responseProcessor = (req, res) => {
     }
 
     const site = libs.portal.getSite();
-
     const defaultDisable = app.name.replace(/\./g, "-") + "_disabled";
 
     if (site && site._path) {
@@ -74,14 +68,6 @@ exports.responseProcessor = (req, res) => {
             res.pageContributions.headEnd = [headEnd];
         }
         res.pageContributions.headEnd.push(headSnippet);
-
-        var bodyBegin = res.pageContributions.bodyBegin;
-        if (!bodyBegin) {
-            res.pageContributions.bodyBegin = [];
-        }
-        else if (typeof (bodyBegin) == 'string') {
-            res.pageContributions.bodyBegin = [bodyBegin];
-        }
     }
     return res;
 };
