@@ -18,6 +18,7 @@ https://market.enonic.com/vendors/enonic/com.enonic.app.google.tagmanager
 | 1.6.0 | 6.7.0 | [Download](http://repo.enonic.com/artifactory/public/com/enonic/app/google.tagmanager/1.6.0/google.tagmanager-1.6.0.jar) |
 | 1.6.1 | 6.7.0 | [Download](http://repo.enonic.com/artifactory/public/com/enonic/app/google.tagmanager/1.6.1/google.tagmanager-1.6.1.jar) |
 | 1.7.0 | 7.0.0 | [Download](http://repo.enonic.com/artifactory/public/com/enonic/app/google.tagmanager/1.7.0/google.tagmanager-1.7.0.jar) |
+| 2.0.0 | 7.0.0 | [Download](http://repo.enonic.com/artifactory/public/com/enonic/app/google.tagmanager/2.0.0/app-google-tag-manager-2.0.0.jar) |
 
 ## Download
 
