@@ -1,45 +1,65 @@
-var portal = require('/lib/xp/portal');
+const libs = {
+  portal: require('/lib/xp/portal')
+};
 
-exports.responseProcessor = function (req, res) {
+const getDefaultScript = (containerID) => {
+  const snippet = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': \
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], \
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= \
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); \
+    })(window,document,'script','dataLayer','${containerID}');`
+  return snippet;
+};
 
-    var siteConfig =  portal.getSiteConfig();
-    var containerID = siteConfig['googleTagManagerContainerID'] || '';
+const getConsentRequiredScript = (script, defaultDisable) => {
+  const snippet = `var gtmScript = "${script}"; \
+    window.__RUN_ON_COOKIE_CONSENT__ = window.__RUN_ON_COOKIE_CONSENT__ || {}; \
+    window.__RUN_ON_COOKIE_CONSENT__["${defaultDisable}"] = function () { \
+      var s = document.createElement("script"); \
+      s.id = "google-tagmanager-consent"; \
+      s.innerText = gtmScript; \
+      document.getElementsByTagName("head")[0].appendChild(s); \
+    }`;
+  return snippet;
+};
 
-    var headSnippet = '<!-- Google Tag Manager -->';
-    headSnippet += '<script>dataLayer = [];</script>';
-    headSnippet += '<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({\'gtm.start\':';
-    headSnippet += 'new Date().getTime(),event:\'gtm.js\'});var f=d.getElementsByTagName(s)[0],';
-    headSnippet += 'j=d.createElement(s),dl=l!=\'dataLayer\'?\'&l=\'+l:\'\';j.async=true;j.src=';
-    headSnippet += '\'//www.googletagmanager.com/gtm.js?id=\'+i+dl;f.parentNode.insertBefore(j,f);';
-    headSnippet += '})(window,document,\'script\',\'dataLayer\',\'' + containerID + '\');</script>';
-    headSnippet += '<!-- End Google Tag Manager -->';
+exports.responseProcessor = (req, res) => {
+  if (req.mode !== 'live') {
+    return res;
+  }
 
-    var bodySnippet = '<!-- Google Tag Manager (noscript) -->';
-    bodySnippet += '<noscript><iframe name="Google Tag Manager" src="//www.googletagmanager.com/ns.html?id=' + containerID + '" ';
-    bodySnippet += 'height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>';
-    bodySnippet += '<!-- End Google Tag Manager (noscript) -->';
+  const site = libs.portal.getSite();
+  const defaultDisable = app.name.replace(/\./g, "-") + "_disabled";
+
+  if (site && site._path) {
+    const siteConfig = libs.portal.getSiteConfig() || {};
+    const containerID = siteConfig['googleTagManagerContainerID'] || '';
 
     // Only add snippet if in live mode and containerID is set
-    if (req.mode === 'live' && containerID !== '') {
-
-        var headEnd = res.pageContributions.headEnd;
-        if (!headEnd) {
-            res.pageContributions.headEnd = [];
-        }
-        else if (typeof(headEnd) == 'string') {
-            res.pageContributions.headEnd = [headEnd];
-        }
-        res.pageContributions.headEnd.push(headSnippet);
-
-        var bodyBegin = res.pageContributions.bodyBegin;
-        if (!bodyBegin) {
-            res.pageContributions.bodyBegin = [];
-        }
-        else if (typeof(bodyBegin) == 'string') {
-            res.pageContributions.bodyBegin = [bodyBegin];
-        }
-        res.pageContributions.bodyBegin.push(bodySnippet);
+    if (!containerID) {
+      return res;
     }
 
-    return res;
+    let script = getDefaultScript(containerID);
+    script = getConsentRequiredScript(script, defaultDisable);
+
+    const headSnippet = `<!-- Google Tag Manager --> \
+        <script>dataLayer = [];</script>
+        <script> \
+        ${script} \
+        </script> \
+        <!-- End Google Tag Manager -->`;
+
+
+    var headEnd = res.pageContributions.headEnd;
+    if (!headEnd) {
+      res.pageContributions.headEnd = [];
+    }
+    else if (typeof (headEnd) == 'string') {
+      res.pageContributions.headEnd = [headEnd];
+    }
+    res.pageContributions.headEnd.push(headSnippet);
+  }
+
+  return res;
 };

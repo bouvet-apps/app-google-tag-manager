@@ -3,10 +3,10 @@
   <form>
     <input type="TextLine" name="googleTagManagerContainerID">
       <label>Container ID</label>
-      <occurrences minimum="0" maximum="1"/>
+      <occurrences minimum="0" maximum="1" />
     </input>
   </form>
   <processors>
-    <response-processor name="google-tagmanager" order="10"/>
+    <response-processor name="google-tagmanager" order="10" />
   </processors>
 </site>
