@@ -7,8 +7,8 @@ plugins {
 app {
     name = project.appName
     displayName = 'Google Tag Manager'
-    vendorName = 'Enonic AS'
-    vendorUrl = 'https://enonic.com'
+    vendorName = 'Bouvet'
+    vendorUrl = 'https://bouvet.no'
     systemVersion = "${xpVersion}"
 }
 
