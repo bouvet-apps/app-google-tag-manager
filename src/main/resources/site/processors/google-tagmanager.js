@@ -1,6 +1,24 @@
 const libs = {
-  portal: require('/lib/xp/portal')
+  portal: require('/lib/xp/portal'),
+  content: require('/lib/xp/content')
 };
+
+const getRootSiteConfig = function () {
+  const rootNode = libs.content.query({
+    count: 1,
+    contentTypes: ['portal:site'],
+    query: '_parentPath = "/content"'
+  }).hits[0];
+
+  const siteConfig = [].concat(rootNode.data.siteConfig);
+
+  for (let i = 0; i < siteConfig.length; i++) {
+    if (siteConfig[i].applicationKey === app.name) {
+      return siteConfig[i].config;
+    }
+  }
+  return {};
+}
 
 const getDefaultScript = (containerID) => {
   const snippet = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': \
@@ -32,7 +50,8 @@ exports.responseProcessor = (req, res) => {
   const defaultDisable = app.name.replace(/\./g, "-") + "_disabled";
 
   if (site && site._path) {
-    const siteConfig = libs.portal.getSiteConfig() || {};
+    const appConfig = libs.portal.getSiteConfig() || {};
+    const siteConfig = appConfig.inheritConfig ? getRootSiteConfig() : appConfig;
     const containerID = siteConfig['googleTagManagerContainerID'] || '';
 
     // Only add snippet if in live mode and containerID is set

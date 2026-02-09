@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
   <form>
+    <input name="inheritConfig" type="CheckBox">
+      <label>Inherit config from main site</label>
+      <help-text>Use configuration from main site when sites are nested.</help-text>
+      <default>unchecked</default>
+      <config>
+        <alignment>left</alignment>
+      </config>
+    </input>
     <input type="TextLine" name="googleTagManagerContainerID">
       <label>Container ID</label>
       <occurrences minimum="0" maximum="1" />
