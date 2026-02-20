@@ -13,6 +13,11 @@
       <label>Container ID</label>
       <occurrences minimum="0" maximum="1" />
     </input>
+    <input type="TextLine" name="customUrl">
+      <label>Custom URL</label>
+      <help-text>If the URL of the script is not 'www.googletagmanager.com' you can add a custom one here. Exmaple: https://${url}/gtm.js?id=</help-text>
+      <occurrences minimum="0" maximum="1" />
+    </input>
   </form>
   <processors>
     <response-processor name="google-tagmanager" order="10" />
