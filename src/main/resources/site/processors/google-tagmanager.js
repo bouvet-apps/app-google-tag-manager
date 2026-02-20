@@ -20,11 +20,11 @@ const getRootSiteConfig = function () {
   return {};
 }
 
-const getDefaultScript = (containerID) => {
+const getDefaultScript = (containerID, url) => {
   const snippet = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': \
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], \
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= \
-    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); \
+    'https://${url}/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); \
     })(window,document,'script','dataLayer','${containerID}');`
   return snippet;
 };
@@ -52,6 +52,7 @@ exports.responseProcessor = (req, res) => {
   if (site && site._path) {
     const appConfig = libs.portal.getSiteConfig() || {};
     const siteConfig = appConfig.inheritConfig ? getRootSiteConfig() : appConfig;
+    const url = appConfig.customUrl ? appConfig.customUrl : "www.googletagmanager.com";
     const containerID = siteConfig['googleTagManagerContainerID'] || '';
 
     // Only add snippet if in live mode and containerID is set
@@ -59,7 +60,7 @@ exports.responseProcessor = (req, res) => {
       return res;
     }
 
-    let script = getDefaultScript(containerID);
+    let script = getDefaultScript(containerID, url);
     script = getConsentRequiredScript(script, defaultDisable);
 
     const headSnippet = `<!-- Google Tag Manager --> \
