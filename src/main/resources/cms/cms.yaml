@@ -1,0 +1,25 @@
+kind: "CMS"
+form:
+  - type: "CheckBox"
+    name: "inheritConfig"
+    label: "Inherit config from main site"
+    helpText: "Use configuration from main site when sites are nested."
+    occurrences:
+      min: 0
+      max: 1
+    alignment: "left"
+    default: "unchecked"
+  - type: "TextLine"
+    name: "googleTagManagerContainerID"
+    label: "Container ID"
+    occurrences:
+      min: 0
+      max: 1
+  - type: "TextLine"
+    name: "customUrl"
+    label: "Custom URL"
+    helpText: "If the URL of the script is not 'www.googletagmanager.com' you can\
+      \ add a custom one here. Example: https://${url}/gtm.js?id="
+    occurrences:
+      min: 0
+      max: 1
