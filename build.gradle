@@ -7,7 +7,6 @@ plugins {
 dependencies {
     include xplibs.portal
     include xplibs.content
-    include 'com.enonic.lib:lib-cache:3.0.0'
 }
 
 repositories {
