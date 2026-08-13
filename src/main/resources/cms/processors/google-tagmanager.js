@@ -42,9 +42,7 @@ const getConsentRequiredScript = (script, defaultDisable) => {
 };
 
 exports.responseProcessor = (req, res) => {
-  if (req.mode !== 'live') {
-    return res;
-  }
+  if (req.mode !== 'live') return res;
 
   const site = libs.portal.getSite();
   const defaultDisable = app.name.replace(/\./g, "-") + "_disabled";
