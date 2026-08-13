@@ -1,0 +1,5 @@
+kind: "Application"
+title: "Google Tag Manager"
+description: "Add the Google Tag Manager snippet to your site"
+vendorName: "Bouvet"
+vendorUrl: "https://bouvet.no"
